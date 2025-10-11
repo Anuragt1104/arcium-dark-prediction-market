@@ -1,0 +1,13 @@
+.anchor
+.DS_Store
+target
+node_modules
+dist
+build
+test-ledger
+.env
+*.so
+*.swp
+*.swo
+.vscode
+.idea

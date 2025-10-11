@@ -1,0 +1,22 @@
+[toolchain]
+# Specifies the version of the Arcium toolchain to use
+arcium_version = "0.1.0"
+
+[programs.localnet]
+dark_prediction_market = "5ReKPSDBcvh8M5nyhVBJsNxdAzC6LfJ5R6wjuApjgLhQ"
+
+[programs.devnet]
+dark_prediction_market = "5ReKPSDBcvh8M5nyhVBJsNxdAzC6LfJ5R6wjuApjgLhQ"
+
+[programs.testnet]
+dark_prediction_market = "5ReKPSDBcvh8M5nyhVBJsNxdAzC6LfJ5R6wjuApjgLhQ"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
