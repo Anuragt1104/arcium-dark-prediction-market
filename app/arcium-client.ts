@@ -112,11 +112,11 @@ export class ArciumClient {
     privateKey: Uint8Array,
     nonce: Buffer
   ): Promise<bigint> {
-    const sharedSecret = x25519.getSharedSecret(privateKey, this.mxePublicKey);
-    const cipher = new RescueCipher(sharedSecret);
+    const sharedSecret = mockX25519.getSharedSecret(privateKey, this.mxePublicKey);
+    const cipher = mockRescueCipher.create(sharedSecret);
     
     // Decrypt amount (in real MPC, this would stay encrypted)
-    const amountPlaintext = cipher.decrypt(encryptedAmount, nonce);
+    const amountPlaintext = cipher.decrypt(new Uint8Array(encryptedAmount), new Uint8Array(nonce));
     
     // Calculate payout: (amount * ratio) / 1e6
     const payout = (amountPlaintext[0] * payoutRatio) / BigInt(1000000);

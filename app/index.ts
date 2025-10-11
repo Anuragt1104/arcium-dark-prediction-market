@@ -23,8 +23,8 @@ interface Market {
 class DarkPredictionMarketClient {
   private connection: Connection;
   private provider: AnchorProvider;
-  private program: Program;
-  private arciumClient: ArciumClient;
+  private program: Program | undefined;
+  private arciumClient!: ArciumClient;
   
   constructor(
     connection: Connection,

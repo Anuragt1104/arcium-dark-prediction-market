@@ -164,8 +164,8 @@ describe("Dark Prediction Market", () => {
       // Outcome: YES
       // Expected payout ratio: 17.5 / 12.2 = 1.434426x
       
-      const totalPool = BigInt(17.5 * anchor.web3.LAMPORTS_PER_SOL);
-      const winningPool = BigInt(12.2 * anchor.web3.LAMPORTS_PER_SOL);
+      const totalPool = BigInt(Math.floor(17.5 * anchor.web3.LAMPORTS_PER_SOL));
+      const winningPool = BigInt(Math.floor(12.2 * anchor.web3.LAMPORTS_PER_SOL));
       const expectedRatio = (totalPool * BigInt(1000000)) / winningPool;
       
       console.log("Expected payout ratio:", Number(expectedRatio) / 1000000);
