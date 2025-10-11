@@ -1,139 +1,220 @@
-# 🔒 Dark Prediction Market - Arcium Encrypted Compute Demo
+# 🔒 Dark Prediction Market
 
-A **privacy-preserving prediction market** built on Solana using [Arcium](https://arcium.com)'s encrypted Multi-Party Computation (MPC) technology. This project demonstrates how to build applications where sensitive data remains encrypted throughout the entire computation lifecycle.
+**Privacy-Preserving Prediction Markets using Arcium Encrypted Compute on Solana**
 
-![Arcium MPC](https://img.shields.io/badge/Arcium-MPC-purple)
-![Solana](https://img.shields.io/badge/Solana-Blockchain-green)
-![License](https://img.shields.io/badge/license-MIT-blue)
+[![Solana](https://img.shields.io/badge/Solana-14F195?style=flat&logo=solana&logoColor=white)](https://solana.com)
+[![Arcium](https://img.shields.io/badge/Arcium-MPC-purple)](https://arcium.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 🎯 Project Overview
+## 🎯 Overview
 
-Traditional prediction markets expose all bets publicly, enabling:
-- **Front-running**: Traders can see large orders and trade ahead
-- **Market manipulation**: Whales can influence outcomes
-- **Privacy leaks**: Everyone knows your positions and bet sizes
+Dark Prediction Market is a privacy-first prediction market platform built on Solana that leverages **Arcium's Multi-Party Computation (MPC)** network to keep bet amounts and predictions completely encrypted until market resolution. This prevents front-running, market manipulation, and provides true privacy for participants.
 
-**Dark Prediction Market solves this** using Arcium's encrypted compute:
+### The Problem
 
-✅ **Hidden bet amounts** - No one sees how much you wagered  
-✅ **Private predictions** - Your position stays secret until resolution  
-✅ **Fair payouts** - MPC calculates winners without revealing individual bets  
-✅ **No trust required** - Computation happens across decentralized Arx nodes  
+Traditional on-chain prediction markets suffer from:
+- 💔 **Transparency Paradox**: All bets are visible, enabling manipulation
+- 🎯 **Front-Running**: Large bets influence market before execution
+- 📊 **Market Manipulation**: Observing bets allows strategic exploitation
+- 🔓 **Privacy Loss**: Everyone can see your positions and amounts
+
+### Our Solution
+
+Using Arcium's encrypted supercomputer:
+- 🔐 **Encrypted Bets**: Amounts and predictions stay secret
+- ⚡ **MPC Resolution**: Fair payout calculation without decryption
+- 🛡️ **Zero Trust**: No single party can see or manipulate data
+- 🚀 **Solana Speed**: Fast, low-cost transactions
 
 ## 🏗️ Architecture
 
-### How It Works
-
 ```
-┌─────────────┐
-│   User      │ Encrypts bet data
-│  (Client)   │ using x25519 + RescueCipher
-└──────┬──────┘
-       │
-       │ Encrypted bet submission
-       ▼
-┌─────────────────────────────────────┐
-│   Solana Program (On-chain)         │
-│  - Stores encrypted bets            │
-│  - Queues MPC computations          │
-│  - Handles callbacks                │
-└──────┬──────────────────────────────┘
-       │
-       │ Queue computation
-       ▼
-┌─────────────────────────────────────┐
-│   Arcium MPC Network                │
-│   ┌────────┐ ┌────────┐ ┌────────┐ │
-│   │ Arx    │ │ Arx    │ │ Arx    │ │
-│   │ Node 1 │ │ Node 2 │ │ Node N │ │
-│   └────────┘ └────────┘ └────────┘ │
-│   Processes encrypted data via MPC  │
-│   No single node sees plaintext     │
-└──────┬──────────────────────────────┘
-       │
-       │ Return encrypted result
-       ▼
-┌─────────────────────────────────────┐
-│   Callback Instruction              │
-│  - Store resolution result          │
-│  - Enable payout claims             │
-└─────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                   Client Application                        │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  Arcium Client Library (@arcium-hq/client)           │  │
+│  │  - Encrypts bet data using x25519 + RescueCipher     │  │
+│  │  - Derives shared secrets with MXE                   │  │
+│  └───────────────────────────────────────────────────────┘  │
+└─────────────────────┬───────────────────────────────────────┘
+                      │ Encrypted Data
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Solana Program (Anchor)                        │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  Instructions:                                        │  │
+│  │  • initialize_market()                                │  │
+│  │  • place_bet() → Queue computation                    │  │
+│  │  • place_bet_callback() ← MPC result                  │  │
+│  │  • resolve_market() → Queue computation               │  │
+│  │  • resolve_market_callback() ← MPC result             │  │
+│  │  • claim_winnings()                                   │  │
+│  └───────────────────────────────────────────────────────┘  │
+└─────────────────────┬───────────────────────────────────────┘
+                      │ CPI to Arcium Program
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│            Arcium MPC Network (Arx Nodes)                   │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+│  │  Arx Node 1 │  │  Arx Node 2 │  │  Arx Node N │        │
+│  │  (secret    │  │  (secret    │  │  (secret    │        │
+│  │   share 1)  │  │   share 2)  │  │   share N)  │        │
+│  └─────────────┘  └─────────────┘  └─────────────┘        │
+│                                                              │
+│  Encrypted Instructions:                                    │
+│  • place_encrypted_bet() - Process bet in MPC               │
+│  • resolve_encrypted_market() - Calculate payouts           │
+│  • calculate_payout() - Individual winnings                 │
+│  • generate_random() - Fair randomness                      │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Key Components
+## 🔐 How Arcium Integration Works
 
-1. **Encrypted Instructions** (`encrypted-ixs/`)
-   - Written in Arcis (Rust framework for MPC)
-   - Marked with `#[encrypted]` and `#[instruction]` macros
-   - Executed across Arcium's decentralized node network
-
-2. **Solana Program** (`programs/dark-prediction-market/`)
-   - Manages market lifecycle (create, bet, resolve, claim)
-   - Queues encrypted computations
-   - Handles MPC callbacks with results
-
-3. **TypeScript Client** (`app/`)
-   - `arcium-client.ts`: Encryption/decryption utilities
-   - `index.ts`: High-level market interactions
-
-## 🔐 Privacy Features
-
-### What Stays Private?
-
-| Data | Visibility |
-|------|-----------|
-| Bet Amount | 🔒 Encrypted until resolution |
-| Prediction (YES/NO) | 🔒 Encrypted until resolution |
-| User Identity | 🔓 Public (wallet address on-chain) |
-| Market Question | 🔓 Public |
-| Total Bets Count | 🔓 Public |
-| Resolution Outcome | 🔓 Public after resolution |
-| Payout Ratios | 🔓 Public after resolution |
-
-### Encryption Process
+### 1. **Encrypted Bet Placement**
 
 ```typescript
-// 1. Generate ephemeral keypair
-const privateKey = x25519.utils.randomSecretKey();
-const publicKey = x25519.getPublicKey(privateKey);
+// Client-side: Encrypt bet data
+const arciumClient = new ArciumClient(mxePublicKey);
+const encrypted = await arciumClient.encryptBet({
+  marketId: 1n,
+  betAmount: 5_000_000_000n, // 5 SOL
+  prediction: 1, // YES
+  userNonce: Date.now()
+});
 
-// 2. Derive shared secret with MXE
-const sharedSecret = x25519.getSharedSecret(privateKey, mxePublicKey);
+// Submit encrypted data to Solana program
+await program.methods.placeBet(
+  computationOffset,
+  encrypted.ciphertext_bet_amount,  // ← Encrypted!
+  encrypted.ciphertext_prediction,  // ← Encrypted!
+  encrypted.pub_key,
+  encrypted.nonce
+).rpc();
+```
 
-// 3. Encrypt using RescueCipher
-const cipher = new RescueCipher(sharedSecret);
-const ciphertext = cipher.encrypt([betAmount], nonce);
+**What happens:**
+1. Data encrypted using x25519 ECDH + RescueCipher
+2. Solana program queues computation to Arcium
+3. MPC nodes process encrypted data (no node sees plaintext)
+4. Result stored on-chain, still encrypted
 
-// 4. Submit to Solana (ciphertext + pubkey)
-// MPC nodes can compute on this without decryption!
+### 2. **MPC Computation** (`encrypted-ixs/place_bet.rs`)
+
+```rust
+#[encrypted]
+mod circuits {
+    #[instruction]
+    pub fn place_encrypted_bet(
+        input_ctxt: Enc<Shared, BetInput>
+    ) -> Enc<Shared, BetReceipt> {
+        let input = input_ctxt.to_arcis();
+        
+        // All operations on ENCRYPTED data!
+        let bet_id = input.market_id * 1000000u64 + input.user_nonce;
+        
+        let receipt = BetReceipt {
+            bet_id,
+            encrypted_amount: input.bet_amount,      // Still encrypted
+            encrypted_prediction: input.prediction,  // Still encrypted
+            timestamp: 0u64,
+        };
+        
+        input_ctxt.owner.from_arcis(receipt)
+    }
+}
+```
+
+**Key Features:**
+- `Enc<Shared, T>` = Data encrypted with shared secret
+- Operations happen on ciphertext (MPC magic!)
+- No single Arx node ever sees plaintext
+
+### 3. **Market Resolution with Privacy**
+
+```rust
+#[instruction]
+pub fn resolve_encrypted_market(
+    state_ctxt: Enc<Shared, MarketState>
+) -> Enc<Shared, ResolutionResult> {
+    let state = state_ctxt.to_arcis();
+    
+    // Calculate on encrypted data
+    let total_pool = state.total_yes_bets + state.total_no_bets;
+    let winning_pool = if state.actual_outcome == 1u8 {
+        state.total_yes_bets
+    } else {
+        state.total_no_bets
+    };
+    
+    let payout_ratio = (total_pool * 1000000u64) / winning_pool;
+    
+    // Return result (revealed to all)
+    ResolutionResult { ... }
+}
+```
+
+**Privacy Properties:**
+- Individual bets remain encrypted
+- Only aggregated totals revealed
+- Payout ratios calculated without exposing individual amounts
+
+## 📁 Project Structure
+
+```
+arcium-dark-prediction-market/
+├── programs/
+│   └── dark-prediction-market/
+│       ├── src/
+│       │   ├── lib.rs                    # Main program entry
+│       │   ├── state.rs                  # Market, Bet, Resolution accounts
+│       │   ├── errors.rs                 # Custom error types
+│       │   └── instructions/
+│       │       ├── initialize_market.rs  # Create new market
+│       │       ├── place_bet.rs         # Queue encrypted bet
+│       │       ├── resolve_market.rs    # Resolve with MPC
+│       │       └── claim_winnings.rs    # Claim payouts
+│       └── Cargo.toml
+├── encrypted-ixs/                        # Arcium MPC circuits
+│   ├── place_bet.rs                     # Encrypted bet processing
+│   ├── resolve_market.rs                # Encrypted resolution logic
+│   └── generate_randomness.rs           # MPC-based RNG
+├── app/
+│   ├── arcium-client.ts                 # Encryption/decryption library
+│   └── index.ts                         # Demo application
+├── tests/
+│   └── dark-prediction-market.test.ts   # Integration tests
+├── Arcium.toml                          # Arcium configuration
+├── Anchor.toml                          # Anchor configuration
+├── package.json                         # Dependencies
+└── README.md
 ```
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- **Node.js** v18+ or **Bun** v1.0+
-- **Rust** 1.75+ with Solana toolchain
-- **Anchor** 0.30.1+
-- **Arcium CLI** (for full integration)
+- Node.js 18+ (Bun recommended)
+- Rust 1.75+
+- Solana CLI 1.18+
+- Anchor 0.30+
+- Arcium CLI (for MPC development)
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/arcium-dark-prediction-market
+git clone https://github.com/yourusername/arcium-dark-prediction-market
 cd arcium-dark-prediction-market
 
 # Install dependencies
-bun install
-# or: npm install
+bun install  # or npm install
 
 # Build the Solana program
 anchor build
 
 # Run tests
 bun test
-# or: npm test
 ```
 
 ### Running the Demo
@@ -146,197 +227,211 @@ solana-test-validator
 bun run app/index.ts
 ```
 
-**Expected output:**
+Expected output:
 ```
 🚀 Dark Prediction Market - Arcium Integration Demo
-
 ============================================================
+Wallet: 8xZy...
+
 📊 Step 1: Create Prediction Market
 ------------------------------------------------------------
-Market ID: 1
-Question: Will Bitcoin reach $100k by end of October 2025?
-✅ Market created
+📊 Creating prediction market...
+  Market ID: 1
+  Question: Will Bitcoin reach $100k by end of October 2025?
+  Ends at: 2025-10-18T12:00:00.000Z
+✅ Market created: 5Hx9...
 
 🔐 Step 2: Place Encrypted Bets
 ------------------------------------------------------------
 Alice places bet:
-  Bet amount: 5.0 SOL (encrypted)
+🔐 Encrypting bet data...
+  Bet amount: 5 SOL (encrypted)
   Prediction: YES (encrypted)
+📤 Submitting encrypted bet to Arcium network...
 ✅ Bet placed successfully!
-
-[... continues with full flow ...]
+   Your bet is now being processed by Arcium MPC nodes
+   No one can see your bet amount or prediction until market resolves
+...
 ```
 
-## 📁 Project Structure
+## 🧪 Testing
 
-```
-arcium-dark-prediction-market/
-├── encrypted-ixs/              # Arcium encrypted instructions (MPC)
-│   ├── place_bet.rs            # Place encrypted bet
-│   ├── resolve_market.rs       # Resolve market via MPC
-│   └── generate_randomness.rs  # Fair RNG using MPC
-│
-├── programs/
-│   └── dark-prediction-market/
-│       ├── src/
-│       │   ├── lib.rs          # Program entry point
-│       │   ├── state.rs        # Account structures
-│       │   ├── errors.rs       # Error codes
-│       │   └── instructions/   # Instruction handlers
-│       │       ├── initialize_market.rs
-│       │       ├── place_bet.rs
-│       │       ├── resolve_market.rs
-│       │       └── claim_winnings.rs
-│       └── Cargo.toml
-│
-├── app/
-│   ├── arcium-client.ts        # Encryption/decryption library
-│   └── index.ts                # Main application & demo
-│
-├── tests/
-│   └── dark-prediction-market.test.ts
-│
-├── Arcium.toml                 # Arcium configuration
-├── Anchor.toml                 # Anchor configuration
-└── package.json
+```bash
+# Run all tests
+bun test
+
+# Run with coverage
+bun test --coverage
+
+# Test specific file
+bun test tests/dark-prediction-market.test.ts
 ```
 
-## 🔬 Technical Deep Dive
+## 🔒 Privacy Features
 
-### Multi-Party Computation (MPC)
+### What Stays Private
 
-Arcium uses **MPC** to enable computation on encrypted data:
+✅ **Individual bet amounts** - Encrypted until resolution  
+✅ **Prediction choices** - Hidden from other participants  
+✅ **User positions** - No one knows who bet on what  
+✅ **Bet timing** - Timestamps encrypted (optional)  
 
-1. **Secret Sharing**: Data is split into "shares" distributed across nodes
-2. **Distributed Computation**: Each node processes its share
-3. **Result Reconstruction**: Shares are combined to produce the final result
-4. **Zero Knowledge**: No single node ever sees the plaintext
+### What Gets Revealed
 
-### Encrypted Instruction Example
+📊 **Market outcome** - YES or NO after resolution  
+📊 **Total pool size** - Aggregate amount across all bets  
+📊 **Payout ratios** - Winners' multiplier  
+📊 **Winner status** - Who won (but not amounts until claimed)  
 
-```rust
-// encrypted-ixs/place_bet.rs
-#[encrypted]
-mod circuits {
-    use arcis_imports::*;
+## 🎓 How Arcium MPC Works
 
-    #[instruction]
-    pub fn place_encrypted_bet(
-        input_ctxt: Enc<Shared, BetInput>
-    ) -> Enc<Shared, BetReceipt> {
-        let input = input_ctxt.to_arcis();
-        
-        // All operations happen on ENCRYPTED data
-        let bet_id = input.market_id * 1000000u64 + input.user_nonce;
-        
-        let receipt = BetReceipt {
-            bet_id,
-            encrypted_amount: input.bet_amount,  // Still encrypted!
-            encrypted_prediction: input.prediction,
-            timestamp: 0u64,
-        };
-        
-        input_ctxt.owner.from_arcis(receipt)  // Returns encrypted
-    }
-}
+### Multi-Party Computation in Action
+
+1. **Secret Sharing**
+   ```
+   Original: bet_amount = 5 SOL
+   ↓
+   Split into shares:
+   Node 1: share_1 = 0x4a3f...
+   Node 2: share_2 = 0x7b2e...
+   Node 3: share_3 = 0x9c1d...
+   
+   ✨ No single node knows the original value!
+   ```
+
+2. **Encrypted Operations**
+   ```rust
+   // This runs on CIPHERTEXT!
+   let total = encrypted_bet_1 + encrypted_bet_2 + encrypted_bet_3;
+   
+   // Result is still encrypted, but mathematically correct
+   ```
+
+3. **Selective Revelation**
+   ```rust
+   // Only reveal what's needed
+   payout_ratio.reveal()  // ← Revealed to all
+   
+   // Keep secrets secret
+   individual_bet_amount  // ← Stays encrypted
+   ```
+
+## 🌟 Use Cases
+
+This architecture enables:
+
+- **🏦 Private Trading**: Dark pools without centralized custody
+- **🎲 Hidden Information Games**: Poker, strategy games
+- **🗳️ Confidential Voting**: Weighted votes without revealing amounts
+- **💰 Anonymous Auctions**: Sealed bid auctions on-chain
+- **📊 Opinion Markets**: Private polls with skin in the game
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env` file:
+
+```bash
+# Solana Configuration
+RPC_ENDPOINT=https://api.devnet.solana.com
+PROGRAM_ID=5ReKPSDBcvh8M5nyhVBJsNxdAzC6LfJ5R6wjuApjgLhQ
+
+# Arcium Configuration
+ARCIUM_CLUSTER=testnet
+MXE_PUBLIC_KEY=<your-mxe-public-key>
+
+# Wallet
+WALLET_PATH=~/.config/solana/id.json
 ```
 
-### Solana Program Integration
+### Arcium.toml
 
-```rust
-// Queue computation to Arcium network
-pub fn place_bet(ctx: Context<PlaceBet>, ...) -> Result<()> {
-    let args = vec![
-        Argument::ArcisPubkey(pub_key),
-        Argument::PlaintextU128(nonce),
-        Argument::EncryptedU64(ciphertext_bet_amount),
-        Argument::EncryptedU8(ciphertext_prediction),
-    ];
-    
-    queue_computation(
-        ctx.accounts,
-        computation_offset,
-        args,
-        None,
-        vec![PlaceBetCallback::callback_ix(&[])],
-    )?;
-    
-    Ok(())
-}
+```toml
+[toolchain]
+arcium_version = "0.1.0"
+
+[programs.testnet]
+dark_prediction_market = "5ReKPSDBcvh8M5nyhVBJsNxdAzC6LfJ5R6wjuApjgLhQ"
+
+[provider]
+cluster = "Testnet"
+wallet = "~/.config/solana/id.json"
 ```
 
-## 🎓 Learning Resources
+## 📚 Learn More
 
-### Arcium Documentation
-- 📖 [Official Docs](https://docs.arcium.com)
-- 📄 [Purple Paper](https://www.arcium.com/articles/arcium-purplepaper)
-- 🔬 [Research Papers](https://www.arcium.com/research)
+### Arcium Resources
+- 📖 [Arcium Documentation](https://docs.arcium.com)
+- 🎨 [Purple Paper](https://www.arcium.com/articles/arcium-purplepaper)
+- 🧑‍💻 [Developer Portal](https://www.arcium.com/testnet)
+- 📝 [Blog: Privacy 2.0](https://www.helius.dev/blog/solana-privacy)
 
-### Understanding MPC
-- [Crypto's New Whitespace: MPC, FHE, TEE](https://equilibrium.co/writing/do-all-roads-lead-to-mpc)
-- [Privacy 2.0 (with Helius)](https://www.helius.dev/blog/solana-privacy)
+### MPC & Cryptography
+- 📘 [What is MPC?](https://equilibrium.co/writing/do-all-roads-lead-to-mpc)
+- 🔐 [MPC vs FHE vs TEE](https://www.arcium.com/articles/arciums-architecture)
+- 🎓 [Research Papers](https://www.arcium.com/research)
 
-### Related Examples
-- [Arcium Examples Repository](https://github.com/arcium-hq/examples)
-- [Hello World Tutorial](https://docs.arcium.com/developers/hello-world)
+### Solana & Anchor
+- ⚡ [Solana Documentation](https://docs.solana.com)
+- ⚓ [Anchor Framework](https://www.anchor-lang.com)
 
 ## 🏆 Hackathon Submission
 
-This project was built for the **Colosseum Cypherpunk Hackathon** Arcium track.
+**For the Arcium + Colosseum Cypherpunk Hackathon**
 
 ### Innovation
-
-✨ **Novel application of encrypted compute** - First private prediction market on Solana using MPC  
-🔐 **Complete privacy preservation** - Bet amounts and predictions hidden until resolution  
-⚡ **Fair and transparent** - Payouts calculated trustlessly via distributed computation  
+- First privacy-preserving prediction market using MPC on Solana
+- Novel use of encrypted compute for fair market resolution
+- Demonstrates Arcium's capability for DeFi privacy
 
 ### Technical Implementation
-
-- ✅ Full integration with Arcium SDK
-- ✅ Encrypted instructions using Arcis framework
-- ✅ Proper callback handling for MPC results
-- ✅ Client-side encryption with x25519 + RescueCipher
-- ✅ Comprehensive test coverage
-- ✅ Production-ready architecture
+- ✅ Full Arcium MPC integration with encrypted instructions
+- ✅ Solana program with computation queueing and callbacks
+- ✅ TypeScript client library for encryption
+- ✅ Complete market lifecycle (create → bet → resolve → claim)
 
 ### Impact
+- Enables private prediction markets without centralized operators
+- Prevents market manipulation through transparency
+- Opens door for privacy-sensitive institutions to participate
+- Template for other privacy-requiring DeFi applications
 
-**Unlocks new use cases:**
-- Dark pools for DeFi trading
-- Private voting systems
-- Confidential auctions
-- Secret strategy games
-
-**Privacy benefits:**
-- Prevents front-running
-- Eliminates market manipulation
-- Protects user financial privacy
-- Enables fair price discovery
+### Clarity
+- Comprehensive documentation
+- Annotated code with clear privacy guarantees
+- Demo application showing complete flow
+- Architecture diagrams and explanations
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions welcome! Please:
 
-## 📜 License
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-MIT License - see [LICENSE](LICENSE) file for details.
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details
 
 ## 🙏 Acknowledgments
 
-- **Arcium Team** for the incredible encrypted compute infrastructure
-- **Solana Foundation** for the fast, low-cost blockchain
-- **Colosseum** for organizing the Cypherpunk Hackathon
+- **Arcium Team** - For building the encrypted supercomputer
+- **Solana Foundation** - For the high-performance blockchain
+- **Anchor** - For the amazing Solana framework
+- **Colosseum** - For hosting the hackathon
 
 ## 📞 Contact
 
-Built with ❤️ by Alenka Media
-
-- GitHub: [Your GitHub Profile]
-- Twitter: [@YourHandle]
-- Discord: YourDiscord#1234
+- **GitHub**: [@YourUsername](https://github.com/yourusername)
+- **Twitter**: [@YourHandle](https://twitter.com/yourhandle)
+- **Discord**: Join the [Arcium Discord](https://discord.com/invite/arcium)
 
 ---
 
-**🔒 Encrypt Everything. Privacy is a Right, Not a Privilege.**
+**Built with 🔐 by [Alenka Media](https://github.com/alenkamedia) for the Arcium Cypherpunk Hackathon**
 
-Learn more about Arcium: [arcium.com](https://arcium.com)
+*"Privacy isn't about having something to hide. It's about having something to protect."*
