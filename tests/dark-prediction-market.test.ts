@@ -171,7 +171,7 @@ describe("Dark Prediction Market", () => {
       console.log("Expected payout ratio:", Number(expectedRatio) / 1000000);
       
       // In MPC computation, this would be calculated on encrypted data
-      expect(expectedRatio).to.be.greaterThan(BigInt(1000000)); // > 1.0x
+      expect(Number(expectedRatio)).to.be.greaterThan(1_000_000); // > 1.0x
     });
 
     it("should only allow market creator to resolve", async () => {

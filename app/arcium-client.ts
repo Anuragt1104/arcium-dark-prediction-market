@@ -7,6 +7,27 @@ import { RescueCipher, getArciumEnv, x25519 } from '@arcium-hq/client';
 import { randomBytes } from 'crypto';
 import { PublicKey } from '@solana/web3.js';
 
+const RESCUE_BLOCK_BYTES = 32;
+
+function flattenCiphertext(blocks: number[][]): Uint8Array {
+  const flattened = blocks.flat();
+  return Uint8Array.from(flattened);
+}
+
+function bufferToCipherBlocks(buffer: Buffer | Uint8Array): number[][] {
+  const view = buffer instanceof Buffer ? buffer : Buffer.from(buffer);
+  if (view.length % RESCUE_BLOCK_BYTES !== 0) {
+    throw new Error('Ciphertext length must be a multiple of 32 bytes');
+  }
+
+  const blocks: number[][] = [];
+  for (let offset = 0; offset < view.length; offset += RESCUE_BLOCK_BYTES) {
+    const slice = view.slice(offset, offset + RESCUE_BLOCK_BYTES);
+    blocks.push(Array.from(slice));
+  }
+  return blocks;
+}
+
 export interface EncryptedBetData {
   ciphertext_bet_amount: Buffer;
   ciphertext_prediction: Buffer;
@@ -59,8 +80,8 @@ export class ArciumClient {
     const predictionCiphertext = cipher.encrypt(predictionPlaintext, nonceBytes);
     
     return {
-      ciphertext_bet_amount: Buffer.from(betAmountCiphertext),
-      ciphertext_prediction: Buffer.from(predictionCiphertext),
+      ciphertext_bet_amount: Buffer.from(flattenCiphertext(betAmountCiphertext)),
+      ciphertext_prediction: Buffer.from(flattenCiphertext(predictionCiphertext)),
       pub_key: Buffer.from(publicKey),
       nonce
     };
@@ -91,9 +112,9 @@ export class ArciumClient {
     const encryptedPrediction = encryptedReceipt.slice(64, 96);
     
     // Decrypt
-    const betIdPlaintext = cipher.decrypt(encryptedBetId, nonce);
-    const amountPlaintext = cipher.decrypt(encryptedAmount, nonce);
-    const predictionPlaintext = cipher.decrypt(encryptedPrediction, nonce);
+    const betIdPlaintext = cipher.decrypt(bufferToCipherBlocks(encryptedBetId), nonce);
+    const amountPlaintext = cipher.decrypt(bufferToCipherBlocks(encryptedAmount), nonce);
+    const predictionPlaintext = cipher.decrypt(bufferToCipherBlocks(encryptedPrediction), nonce);
     
     return {
       betId: betIdPlaintext[0],
@@ -112,11 +133,14 @@ export class ArciumClient {
     privateKey: Uint8Array,
     nonce: Buffer
   ): Promise<bigint> {
-    const sharedSecret = mockX25519.getSharedSecret(privateKey, this.mxePublicKey);
-    const cipher = mockRescueCipher.create(sharedSecret);
+    const sharedSecret = x25519.getSharedSecret(privateKey, this.mxePublicKey);
+    const cipher = new RescueCipher(sharedSecret);
     
     // Decrypt amount (in real MPC, this would stay encrypted)
-    const amountPlaintext = cipher.decrypt(new Uint8Array(encryptedAmount), new Uint8Array(nonce));
+    const amountPlaintext = cipher.decrypt(
+      bufferToCipherBlocks(encryptedAmount),
+      nonce
+    );
     
     // Calculate payout: (amount * ratio) / 1e6
     const payout = (amountPlaintext[0] * payoutRatio) / BigInt(1000000);
