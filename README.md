@@ -4,7 +4,11 @@
 
 [![Solana](https://img.shields.io/badge/Solana-14F195?style=flat&logo=solana&logoColor=white)](https://solana.com)
 [![Arcium](https://img.shields.io/badge/Arcium-MPC-purple)](https://arcium.com)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+> **⚡ Quick Start:** `cd frontend && npm run dev` → http://localhost:3000
 
 ## 🎯 Overview
 
@@ -194,37 +198,48 @@ arcium-dark-prediction-market/
 
 ### Prerequisites
 
-- Node.js 18+ (Bun recommended)
-- Rust 1.75+
-- Solana CLI 1.18+
-- Anchor 0.30+
-- Arcium CLI (for MPC development)
+- **Node.js 18+** or Bun
+- **Solana Wallet** (Phantom, Solflare, etc.)
+- (Optional) Rust 1.75+ and Solana CLI for program development
 
-### Installation
+### Quick Start - Frontend Only
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/arcium-dark-prediction-market
+git clone https://github.com/Anuragt1104/arcium-dark-prediction-market
 cd arcium-dark-prediction-market
 
-# Install dependencies
-bun install  # or npm install
+# Install and run frontend
+cd frontend
+npm install
+npm run dev
 
-# Build the Solana program
-anchor build
-
-# Run tests
-bun test
+# Open http://localhost:3000
 ```
 
-### Running the Demo
+### Full Development Setup
 
 ```bash
-# Start local Solana validator
-solana-test-validator
+# 1. Install all dependencies
+npm install
+cd frontend && npm install && cd ..
 
-# In another terminal, run the demo
-bun run app/index.ts
+# 2. Build Solana program (optional - for development)
+anchor build
+
+# 3. Run tests
+npm test
+
+# 4. Start frontend
+cd frontend
+npm run dev
+```
+
+### Running the CLI Demo
+
+```bash
+# Original CLI demo (without frontend)
+npm run start
 ```
 
 Expected output:

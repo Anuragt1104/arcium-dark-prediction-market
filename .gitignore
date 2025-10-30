@@ -1,13 +1,74 @@
-.anchor
-.DS_Store
-target
-node_modules
-dist
-build
-test-ledger
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+.nyc_output/
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Production
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
 .env
-*.so
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+
+# Solana/Anchor
+.anchor/
+target/
+test-ledger/
+**/*.rs.bk
+keypairs/
+
+# IDEs
+.vscode/
+.idea/
 *.swp
 *.swo
-.vscode
-.idea
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Build artifacts
+*.so
+*.wasm
+
+# Wallet keys (NEVER commit these!)
+*.json
+!tsconfig.json
+!package.json
+!package-lock.json
+
+# Generated IDL
+app/idl/
+
+# Cache
+.turbo/
+.parcel-cache/
